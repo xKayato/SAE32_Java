@@ -10,9 +10,9 @@ public class ToJSON {
 
     public ToJSON(String csvFile) {
         this.csvFile = csvFile;
-    }
+        }
 
-    public JSONObject csvToJson() {
+        public JSONObject csvToJson() {
         JSONObject json = new JSONObject();
         JSONArray dataArray = new JSONArray();
 
@@ -32,16 +32,8 @@ public class ToJSON {
                         String header = headers[j].trim();
                         String value = data[j].trim();
 
-                        // Convert "tags" column into JSONArray
-                        if (header.equalsIgnoreCase("tags")) {
-                            JSONArray tagsArray = new JSONArray();
-                            for (String tag : value.split(",")) {
-                                tagsArray.put(tag.trim());
-                            }
-                            jsonObject.put(header, tagsArray);
-                        } else {
-                            jsonObject.put(header, value);
-                        }
+                        jsonObject.put(header, value);
+                        
                     }
                     dataArray.put(jsonObject);
                 } else {

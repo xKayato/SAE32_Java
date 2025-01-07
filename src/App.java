@@ -11,8 +11,11 @@ public class App {
 
         ToJSON = new ToJSON("table.csv");
 
+        
+
         JSONObject json = ToJSON.csvToJson();
         if (json.length() > 0) {
+            System.out.println(json);
             database.insertIntoDb(json);
         } else {
             System.out.println("Pas de donnée à importer.");
