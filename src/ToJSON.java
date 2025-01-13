@@ -5,7 +5,9 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+
 public class ToJSON {
+
     private final String csvFile;
 
     public ToJSON(String csvFile) {
@@ -19,7 +21,7 @@ public class ToJSON {
         try {
             List<String> lines = Files.readAllLines(Paths.get(csvFile));
             if (lines.isEmpty()) {
-                System.out.println("Le fichier CSV est vide.");
+                System.out.println(Utils.ANSI_YELLOW + "[ERROR] Le fichier CSV est vide." + Utils.ANSI_RESET);
                 return json;
             }
 
@@ -37,12 +39,12 @@ public class ToJSON {
                     }
                     dataArray.put(jsonObject);
                 } else {
-                    System.out.println("Ligne ignorée : " + lines.get(i));
+                    System.out.println(Utils.ANSI_YELLOW + "[WARNING] Ligne ignorée : " + lines.get(i) + Utils.ANSI_RESET);
                 }
             }
             json.put("data", dataArray);
         } catch (IOException e) {
-            System.out.println("Erreur lors de la lecture du fichier : " + e.getMessage());
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la lecture du fichier : " + e.getMessage() + Utils.ANSI_RESET);
         }
 
         return json;

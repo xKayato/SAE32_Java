@@ -16,13 +16,19 @@ public class database {
         this.file = file;
     }
 
+    public Connection getConnection() {
+        return this.connection;
+    }
+
     public void connectDatabase() {
         String url = "jdbc:sqlite:" + this.file;
         try {
             this.connection = DriverManager.getConnection(url);
-            System.out.println("Connexion à la base de données établie.");
+            System.out
+                    .println(Utils.ANSI_GREEN + "[SUCESS] Connexion à la base de données établie." + Utils.ANSI_RESET);
         } catch (SQLException e) {
-            System.out.println("Erreur lors de la connexion à la base de données : " + e.getMessage());
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la connexion à la base de données : "
+                    + e.getMessage() + Utils.ANSI_RESET);
         }
     }
 
@@ -32,7 +38,8 @@ public class database {
         String checkType = "SELECT 1 FROM Type WHERE nomType = ?";
 
         if (this.connection == null) {
-            System.out.println("Erreur : connexion à la base de données non établie.");
+            System.out
+                    .println(Utils.ANSI_RED + "[ERROR] Connexion à la base de données non établie." + Utils.ANSI_RESET);
             return;
         }
 
@@ -74,13 +81,81 @@ public class database {
                 }
 
                 if (idOeuvre == -1) {
-                    System.out.println("Erreur : ID de l'Oeuvre non récupéré.");
+                    System.out.println(Utils.ANSI_RED + "[ERROR] ID de l'Oeuvre non récupéré." + Utils.ANSI_RESET);
                     continue;
                 }
 
             } catch (SQLException e) {
-                System.out.println("Erreur lors de l'insertion de cette ligne : " + e.getMessage());
+                System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de l'insertion de cette ligne : "
+                        + e.getMessage() + Utils.ANSI_RESET);
             }
+        }
+
+        System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Importation terminée." + Utils.ANSI_RESET);
+    }
+
+    public void promoteUser(String login){
+        String sqlUpdate = "UPDATE User SET acces = 1 WHERE login = ?";
+        try (PreparedStatement pstmt = this.connection.prepareStatement(sqlUpdate)) {
+            pstmt.setString(1, login);
+            pstmt.executeUpdate();
+            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Utilisateur " + login + " promu en Administrateur." + Utils.ANSI_RESET);
+        } catch (SQLException e) {
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la promotion de l'utilisateur : " + e.getMessage() + Utils.ANSI_RESET);
+            }
+        }
+
+    public void resetDatabase() {
+        String sql = "BEGIN TRANSACTION; " +
+                "DROP TABLE IF EXISTS Avis; " +
+                "DROP TABLE IF EXISTS Oeuvre; " +
+                "DROP TABLE IF EXISTS Type; " +
+                "DROP TABLE IF EXISTS User; " +
+                "CREATE TABLE IF NOT EXISTS Avis ( " +
+                "idAvis INTEGER, " +
+                "texteAvis TEXT, " +
+                "note INT, " +
+                "date DATE, " +
+                "idOeuvre INT, " +
+                "login VARCHAR(100), " +
+                "PRIMARY KEY(idAvis AUTOINCREMENT), " +
+                "FOREIGN KEY(idOeuvre) REFERENCES Oeuvre(idOeuvre) ON DELETE CASCADE, " +
+                "FOREIGN KEY(login) REFERENCES User(login) ON DELETE CASCADE); " +
+                "CREATE TABLE IF NOT EXISTS Oeuvre ( " +
+                "idOeuvre INTEGER, " +
+                "nomOeuvre VARCHAR(100), " +
+                "dateSortie DATE, " +
+                "actif BOOLEAN, " +
+                "auteur_studio VARCHAR(100), " +
+                "type TEXT, " +
+                "PRIMARY KEY(idOeuvre AUTOINCREMENT)); " +
+                "CREATE TABLE IF NOT EXISTS Type ( " +
+                "nomType VARCHAR(100), " +
+                "PRIMARY KEY(nomType)); " +
+                "CREATE TABLE IF NOT EXISTS User ( " +
+                "login VARCHAR(100), " +
+                "mdp VARCHAR(100) NOT NULL, " +
+                "acces VARCHAR(20), " +
+                "PRIMARY KEY(login)); " +
+                "INSERT INTO Type (nomType) VALUES " +
+                "('Film'), " +
+                "('Manga'), " +
+                "('Anime'), " +
+                "('Série'), " +
+                "('Dessin Anime'), " +
+                "('Livre'), " +
+                "('Jeu Video'), " +
+                "('Film Anime'); " +
+                "INSERT INTO User (login, mdp, acces) VALUES " +
+                "('admin', '21232f297a57a5a743894a0e4a801fc3', '1'); " +
+                "COMMIT;";
+
+        try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
+            pstmt.executeUpdate();
+            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Base de données réinitialisée." + Utils.ANSI_RESET);
+        } catch (SQLException e) {
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la réinitialisation de la base de données : "
+                    + e.getMessage() + Utils.ANSI_RESET);
         }
     }
 
@@ -91,9 +166,54 @@ public class database {
                 return rs.next(); // Si une ligne est retournée, l'enregistrement existe
             }
         } catch (SQLException e) {
-            System.out.println("Erreur lors de la vérification : " + e.getMessage());
+            System.out.println(
+                    Utils.ANSI_RED + "[ERROR] Erreur lors de la vérification : " + e.getMessage() + Utils.ANSI_RESET);
         }
         return false;
+    }
+
+    public void addType(String type){
+        String sql = "INSERT INTO Type (nomType) VALUES (?)";
+        try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
+            pstmt.setString(1, type);
+            pstmt.executeUpdate();
+            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Type " + type + " ajouté." + Utils.ANSI_RESET);
+        } catch (SQLException e) {
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de l'ajout du type : " + e.getMessage() + Utils.ANSI_RESET);
+        }
+    }
+
+    public void deleteType(String type){
+        String sql = "DELETE FROM Type WHERE nomType = ?";
+        try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
+            pstmt.setString(1, type);
+            pstmt.executeUpdate();
+            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Type " + type + " supprimé." + Utils.ANSI_RESET);
+        } catch (SQLException e) {
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression du type : " + e.getMessage() + Utils.ANSI_RESET);
+        }
+    }
+
+    public void deleteLogin(String login){
+        String sql = "DELETE FROM User WHERE login = ?";
+        try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
+            pstmt.setString(1, login);
+            pstmt.executeUpdate();
+            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Utilisateur " + login + " supprimé." + Utils.ANSI_RESET);
+        } catch (SQLException e) {
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression de l'utilisateur : " + e.getMessage() + Utils.ANSI_RESET);
+        }
+    }
+
+    public void deleteOeuvre(String Oeuvre){
+        String sql = "DELETE FROM Oeuvre WHERE nomOeuvre = ?";
+        try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
+            pstmt.setString(1, Oeuvre);
+            pstmt.executeUpdate();
+            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Oeuvre " + Oeuvre + " supprimée." + Utils.ANSI_RESET);
+        } catch (SQLException e) {
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression de l'oeuvre : " + e.getMessage() + Utils.ANSI_RESET);
+        }
     }
 
 }
