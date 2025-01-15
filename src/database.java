@@ -234,4 +234,16 @@ public class database {
         }
     }
 
+    public void backupDatabase() {
+        String backupFile = "/var/lib/judgementday/backup.db";
+        String url = "jdbc:sqlite:" + backupFile;
+        try (Connection backupConnection = DriverManager.getConnection(url)) {
+            connection.createStatement().execute("backup to " + backupFile);
+            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Base de données sauvegardée." + Utils.ANSI_RESET);
+        } catch (SQLException e) {
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la sauvegarde de la base de données : "
+                    + e.getMessage() + Utils.ANSI_RESET);
+        }
+    }
+
 }

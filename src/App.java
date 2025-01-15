@@ -9,7 +9,7 @@ public class App {
     public App() {
         utils = new Utils();
 
-        database = new database("database_oeuvres.db");
+        database = new database("/var/lib/judgementday/database_oeuvres.db");
         database.connectDatabase();
 
         System.out.println("\nBienvenue dans l'application de gestion de base de données de JugementDay !\n");
@@ -19,7 +19,8 @@ public class App {
         System.out.println("3. Ajouter un élément.");
         System.out.println("4. Supprimer un élément.");
         System.out.println("5. Réinitialiser la base de données.");
-        System.out.println("6. Quitter l'application.");
+        System.out.println("6. Faire une backup de la base de donées.");
+        System.out.println("7. Quitter l'application.");
 
         input = new Scanner(System.in);
         int choice = input.nextInt();
@@ -50,6 +51,9 @@ public class App {
                 }
                 break;
             case 6:
+                utils.backupDatabase(database);
+                break;
+            case 7:
                 System.out.println("Au revoir !");
                 System.exit(0);
                 break;

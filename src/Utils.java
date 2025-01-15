@@ -110,4 +110,9 @@ public class Utils {
         String login = input.nextLine();
         database.deleteLogin(login);
     }
+
+    public void backupDatabase(database database) {
+        System.out.println(ANSI_CYAN + "[INFO] Backup de la base de données en cours..." + ANSI_RESET);
+        database.backupDatabase();
+    }
 }
