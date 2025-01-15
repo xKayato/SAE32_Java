@@ -94,68 +94,82 @@ public class database {
         System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Importation terminée." + Utils.ANSI_RESET);
     }
 
-    public void promoteUser(String login){
+    public void promoteUser(String login) {
         String sqlUpdate = "UPDATE User SET acces = 1 WHERE login = ?";
         try (PreparedStatement pstmt = this.connection.prepareStatement(sqlUpdate)) {
             pstmt.setString(1, login);
             pstmt.executeUpdate();
-            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Utilisateur " + login + " promu en Administrateur." + Utils.ANSI_RESET);
+            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Utilisateur " + login + " promu en Administrateur."
+                    + Utils.ANSI_RESET);
         } catch (SQLException e) {
-            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la promotion de l'utilisateur : " + e.getMessage() + Utils.ANSI_RESET);
-            }
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la promotion de l'utilisateur : "
+                    + e.getMessage() + Utils.ANSI_RESET);
         }
+    }
 
     public void resetDatabase() {
-        String sql = "BEGIN TRANSACTION; " +
-                "DROP TABLE IF EXISTS Avis; " +
-                "DROP TABLE IF EXISTS Oeuvre; " +
-                "DROP TABLE IF EXISTS Type; " +
-                "DROP TABLE IF EXISTS User; " +
+        // Script SQL, chaque commande séparée par un point-virgule
+        String[] sqlCommands = {
+                "DROP TABLE IF EXISTS Avis",
+                "DROP TABLE IF EXISTS Oeuvre",
+                "DROP TABLE IF EXISTS Type",
+                "DROP TABLE IF EXISTS User",
                 "CREATE TABLE IF NOT EXISTS Avis ( " +
-                "idAvis INTEGER, " +
-                "texteAvis TEXT, " +
-                "note INT, " +
-                "date DATE, " +
-                "idOeuvre INT, " +
-                "login VARCHAR(100), " +
-                "PRIMARY KEY(idAvis AUTOINCREMENT), " +
-                "FOREIGN KEY(idOeuvre) REFERENCES Oeuvre(idOeuvre) ON DELETE CASCADE, " +
-                "FOREIGN KEY(login) REFERENCES User(login) ON DELETE CASCADE); " +
+                        "idAvis INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "texteAvis TEXT, " +
+                        "note INT, " +
+                        "date DATE, " +
+                        "idOeuvre INT, " +
+                        "login VARCHAR(100), " +
+                        "FOREIGN KEY(idOeuvre) REFERENCES Oeuvre(idOeuvre) ON DELETE CASCADE, " +
+                        "FOREIGN KEY(login) REFERENCES User(login) ON DELETE CASCADE)",
                 "CREATE TABLE IF NOT EXISTS Oeuvre ( " +
-                "idOeuvre INTEGER, " +
-                "nomOeuvre VARCHAR(100), " +
-                "dateSortie DATE, " +
-                "actif BOOLEAN, " +
-                "auteur_studio VARCHAR(100), " +
-                "type TEXT, " +
-                "PRIMARY KEY(idOeuvre AUTOINCREMENT)); " +
+                        "idOeuvre INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "nomOeuvre VARCHAR(100), " +
+                        "dateSortie DATE, " +
+                        "actif BOOLEAN, " +
+                        "auteur_studio VARCHAR(100), " +
+                        "type TEXT)",
                 "CREATE TABLE IF NOT EXISTS Type ( " +
-                "nomType VARCHAR(100), " +
-                "PRIMARY KEY(nomType)); " +
+                        "nomType VARCHAR(100) PRIMARY KEY)",
                 "CREATE TABLE IF NOT EXISTS User ( " +
-                "login VARCHAR(100), " +
-                "mdp VARCHAR(100) NOT NULL, " +
-                "acces VARCHAR(20), " +
-                "PRIMARY KEY(login)); " +
+                        "login VARCHAR(100) PRIMARY KEY, " +
+                        "mdp VARCHAR(100) NOT NULL, " +
+                        "acces VARCHAR(20))",
                 "INSERT INTO Type (nomType) VALUES " +
-                "('Film'), " +
-                "('Manga'), " +
-                "('Anime'), " +
-                "('Série'), " +
-                "('Dessin Anime'), " +
-                "('Livre'), " +
-                "('Jeu Video'), " +
-                "('Film Anime'); " +
+                        "('Film'), ('Manga'), ('Anime'), ('Série'), " +
+                        "('Dessin Anime'), ('Livre'), ('Jeu Video'), ('Film Anime')",
                 "INSERT INTO User (login, mdp, acces) VALUES " +
-                "('admin', '21232f297a57a5a743894a0e4a801fc3', '1'); " +
-                "COMMIT;";
+                        "('admin', '21232f297a57a5a743894a0e4a801fc3', '1')"
+        };
 
-        try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
-            pstmt.executeUpdate();
+        try {
+            connection.setAutoCommit(false); // Désactiver l'auto-commit pour garantir l'intégrité des transactions
+
+            for (String sql : sqlCommands) {
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.executeUpdate();
+                }
+            }
+
+            connection.commit(); // Valider les changements
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Base de données réinitialisée." + Utils.ANSI_RESET);
         } catch (SQLException e) {
+            try {
+                connection.rollback(); // Annuler les changements en cas d'erreur
+            } catch (SQLException rollbackEx) {
+                System.out.println(
+                        Utils.ANSI_RED + "[ERROR] Échec du rollback : " + rollbackEx.getMessage() + Utils.ANSI_RESET);
+            }
             System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la réinitialisation de la base de données : "
                     + e.getMessage() + Utils.ANSI_RESET);
+        } finally {
+            try {
+                connection.setAutoCommit(true); // Réactiver l'auto-commit
+            } catch (SQLException ex) {
+                System.out.println(Utils.ANSI_RED + "[ERROR] Impossible de réactiver l'auto-commit : " + ex.getMessage()
+                        + Utils.ANSI_RESET);
+            }
         }
     }
 
@@ -172,47 +186,51 @@ public class database {
         return false;
     }
 
-    public void addType(String type){
+    public void addType(String type) {
         String sql = "INSERT INTO Type (nomType) VALUES (?)";
         try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
             pstmt.setString(1, type);
             pstmt.executeUpdate();
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Type " + type + " ajouté." + Utils.ANSI_RESET);
         } catch (SQLException e) {
-            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de l'ajout du type : " + e.getMessage() + Utils.ANSI_RESET);
+            System.out.println(
+                    Utils.ANSI_RED + "[ERROR] Erreur lors de l'ajout du type : " + e.getMessage() + Utils.ANSI_RESET);
         }
     }
 
-    public void deleteType(String type){
+    public void deleteType(String type) {
         String sql = "DELETE FROM Type WHERE nomType = ?";
         try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
             pstmt.setString(1, type);
             pstmt.executeUpdate();
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Type " + type + " supprimé." + Utils.ANSI_RESET);
         } catch (SQLException e) {
-            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression du type : " + e.getMessage() + Utils.ANSI_RESET);
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression du type : " + e.getMessage()
+                    + Utils.ANSI_RESET);
         }
     }
 
-    public void deleteLogin(String login){
+    public void deleteLogin(String login) {
         String sql = "DELETE FROM User WHERE login = ?";
         try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
             pstmt.setString(1, login);
             pstmt.executeUpdate();
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Utilisateur " + login + " supprimé." + Utils.ANSI_RESET);
         } catch (SQLException e) {
-            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression de l'utilisateur : " + e.getMessage() + Utils.ANSI_RESET);
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression de l'utilisateur : "
+                    + e.getMessage() + Utils.ANSI_RESET);
         }
     }
 
-    public void deleteOeuvre(String Oeuvre){
+    public void deleteOeuvre(String Oeuvre) {
         String sql = "DELETE FROM Oeuvre WHERE nomOeuvre = ?";
         try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
             pstmt.setString(1, Oeuvre);
             pstmt.executeUpdate();
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Oeuvre " + Oeuvre + " supprimée." + Utils.ANSI_RESET);
         } catch (SQLException e) {
-            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression de l'oeuvre : " + e.getMessage() + Utils.ANSI_RESET);
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression de l'oeuvre : " + e.getMessage()
+                    + Utils.ANSI_RESET);
         }
     }
 
