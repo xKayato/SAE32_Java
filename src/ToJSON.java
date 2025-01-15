@@ -25,20 +25,23 @@ public class ToJSON {
                 return json;
             }
 
+            // Avoir les entêtes
             String[] headers = lines.get(0).split(";");
             for (int i = 1; i < lines.size(); i++) {
                 String[] data = lines.get(i).split(";");
                 if (data.length == headers.length) {
+                    // Créer un objet JSON pour chaque ligne
                     JSONObject jsonObject = new JSONObject();
                     for (int j = 0; j < headers.length; j++) {
                         String header = headers[j].trim();
                         String value = data[j].trim();
-
+                        // Ajouter les données dans l'objet JSON
                         jsonObject.put(header, value);
                         
                     }
                     dataArray.put(jsonObject);
                 } else {
+                    // Ignorer les lignes qui ne correspondent pas au format
                     System.out.println(Utils.ANSI_YELLOW + "[WARNING] Ligne ignorée : " + lines.get(i) + Utils.ANSI_RESET);
                 }
             }

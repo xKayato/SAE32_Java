@@ -20,10 +20,13 @@ public class database {
         return this.connection;
     }
 
+    /*
+     * Connexion à la base de données SQLite
+     */
     public void connectDatabase() {
-        String url = "jdbc:sqlite:" + this.file;
+        String url = "jdbc:sqlite:" + this.file; // URL de la base de données
         try {
-            this.connection = DriverManager.getConnection(url);
+            this.connection = DriverManager.getConnection(url); // Connexion à la base de données
             System.out
                     .println(Utils.ANSI_GREEN + "[SUCESS] Connexion à la base de données établie." + Utils.ANSI_RESET);
         } catch (SQLException e) {
@@ -32,11 +35,13 @@ public class database {
         }
     }
 
+    /*
+     * Insère les données d'un fichier JSON dans la base de données
+     */
     public void insertIntoDb(JSONObject json) {
-        String sqlOeuvre = "INSERT INTO Oeuvre (nomOeuvre, dateSortie, auteur_studio, actif, type) VALUES (?, ?, ?, ?, ?)";
-        String sqlType = "INSERT INTO Type (nomType) VALUES (?)";
-        String checkType = "SELECT 1 FROM Type WHERE nomType = ?";
-
+        String sqlOeuvre = "INSERT INTO Oeuvre (nomOeuvre, dateSortie, auteur_studio, actif, type) VALUES (?, ?, ?, ?, ?)"; // Requête SQL
+        String sqlType = "INSERT INTO Type (nomType) VALUES (?)"; // Requête SQL
+        String checkType = "SELECT 1 FROM Type WHERE nomType = ?"; // Requête SQL
         if (this.connection == null) {
             System.out
                     .println(Utils.ANSI_RED + "[ERROR] Connexion à la base de données non établie." + Utils.ANSI_RESET);
@@ -94,6 +99,10 @@ public class database {
         System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Importation terminée." + Utils.ANSI_RESET);
     }
 
+
+    /*
+     * Promouvoir un utilisateur à Administrateur (acces = 1)
+     */
     public void promoteUser(String login) {
         String sqlUpdate = "UPDATE User SET acces = 1 WHERE login = ?";
         try (PreparedStatement pstmt = this.connection.prepareStatement(sqlUpdate)) {
@@ -107,6 +116,10 @@ public class database {
         }
     }
 
+
+    /*
+     * Réinitialise la base de données en supprimant toutes les tables et en les recréant. Certaines données sont remises
+     */
     public void resetDatabase() {
         // Script SQL, chaque commande séparée par un point-virgule
         String[] sqlCommands = {
@@ -173,6 +186,9 @@ public class database {
         }
     }
 
+    /*
+     * Vérifie si un enregistrement existe dans la base de données (utilisé pour éviter les doublons)
+     */
     private boolean recordExists(String query, String value) {
         try (PreparedStatement pstmt = this.connection.prepareStatement(query)) {
             pstmt.setString(1, value);
@@ -186,11 +202,14 @@ public class database {
         return false;
     }
 
+    /*
+     * Ajoute un type à la base de données
+     */
     public void addType(String type) {
-        String sql = "INSERT INTO Type (nomType) VALUES (?)";
+        String sql = "INSERT INTO Type (nomType) VALUES (?)"; // Requête SQL
         try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
-            pstmt.setString(1, type);
-            pstmt.executeUpdate();
+            pstmt.setString(1, type); // Remplace le premier point d'interrogation par le type
+            pstmt.executeUpdate(); // Exécute la requête
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Type " + type + " ajouté." + Utils.ANSI_RESET);
         } catch (SQLException e) {
             System.out.println(
@@ -198,11 +217,14 @@ public class database {
         }
     }
 
+    /*
+     * Ajoute un utilisateur à la base de données
+     */
     public void deleteType(String type) {
-        String sql = "DELETE FROM Type WHERE nomType = ?";
+        String sql = "DELETE FROM Type WHERE nomType = ?"; // Requête SQL
         try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
-            pstmt.setString(1, type);
-            pstmt.executeUpdate();
+            pstmt.setString(1, type); // Remplace le premier point d'interrogation par le type
+            pstmt.executeUpdate(); // Exécute la requête
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Type " + type + " supprimé." + Utils.ANSI_RESET);
         } catch (SQLException e) {
             System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression du type : " + e.getMessage()
@@ -210,11 +232,14 @@ public class database {
         }
     }
 
+    /*
+     * Ajoute un utilisateur à la base de données
+     */
     public void deleteLogin(String login) {
-        String sql = "DELETE FROM User WHERE login = ?";
+        String sql = "DELETE FROM User WHERE login = ?"; // Requête SQL
         try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
-            pstmt.setString(1, login);
-            pstmt.executeUpdate();
+            pstmt.setString(1, login); // Remplace le premier point d'interrogation par le login
+            pstmt.executeUpdate(); // Exécute la requête
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Utilisateur " + login + " supprimé." + Utils.ANSI_RESET);
         } catch (SQLException e) {
             System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression de l'utilisateur : "
@@ -222,11 +247,14 @@ public class database {
         }
     }
 
+    /*
+     * Supprime une oeuvre de la base de données
+     */
     public void deleteOeuvre(String Oeuvre) {
-        String sql = "DELETE FROM Oeuvre WHERE nomOeuvre = ?";
+        String sql = "DELETE FROM Oeuvre WHERE nomOeuvre = ?"; // Requête SQL
         try (PreparedStatement pstmt = this.connection.prepareStatement(sql)) {
-            pstmt.setString(1, Oeuvre);
-            pstmt.executeUpdate();
+            pstmt.setString(1, Oeuvre); // Remplace le premier point d'interrogation par le nom de l'oeuvre
+            pstmt.executeUpdate(); // Exécute la requête
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Oeuvre " + Oeuvre + " supprimée." + Utils.ANSI_RESET);
         } catch (SQLException e) {
             System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la suppression de l'oeuvre : " + e.getMessage()
@@ -234,11 +262,14 @@ public class database {
         }
     }
 
+    /*
+     * Sauvegarde la base de données dans un fichier backup.db
+     */
     public void backupDatabase() {
-        String backupFile = "/var/lib/judgementday/backup.db";
-        String url = "jdbc:sqlite:" + backupFile;
+        String backupFile = "/var/lib/judgementday/backup.db"; // Emplacement de la sauvegarde
+        String url = "jdbc:sqlite:" + backupFile; // URL de la sauvegarde
         try (Connection backupConnection = DriverManager.getConnection(url)) {
-            connection.createStatement().execute("backup to " + backupFile);
+            connection.createStatement().execute("backup to " + backupFile); // Sauvegarde la base de données (commande SQLite)
             System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Base de données sauvegardée." + Utils.ANSI_RESET);
         } catch (SQLException e) {
             System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la sauvegarde de la base de données : "
