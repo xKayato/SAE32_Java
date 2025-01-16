@@ -4,6 +4,7 @@ import org.json.JSONObject;
 public class Utils {
 
     ToJSON toJSON;
+    // Couleurs pour les messages
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -114,5 +115,10 @@ public class Utils {
     public void backupDatabase(database database) {
         System.out.println(ANSI_CYAN + "[INFO] Backup de la base de données en cours..." + ANSI_RESET);
         database.backupDatabase();
+    }
+
+    public void retrogradeAdmin(String login, database database) {
+        System.out.println(ANSI_CYAN + "[INFO] Rétrogradation de l'administrateur en cours..." + ANSI_RESET);
+        database.retrogradeAdmin(login);
     }
 }

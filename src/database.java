@@ -116,6 +116,22 @@ public class database {
         }
     }
 
+    /*
+     * Rétrograder un Administrateur à utilisateur (acces = 0)
+     */
+    public void retrogradeAdmin(String login) {
+        String sqlUpdate = "UPDATE User SET acces = 0 WHERE login = ?";
+        try (PreparedStatement pstmt = this.connection.prepareStatement(sqlUpdate)) {
+            pstmt.setString(1, login);
+            pstmt.executeUpdate();
+            System.out.println(Utils.ANSI_GREEN + "[SUCCESS] Administrateur " + login + " rétrogradé en utilisateur."
+                    + Utils.ANSI_RESET);
+        } catch (SQLException e) {
+            System.out.println(Utils.ANSI_RED + "[ERROR] Erreur lors de la rétrogradation de l'Administrateur : "
+                    + e.getMessage() + Utils.ANSI_RESET);
+        }
+    }
+
 
     /*
      * Réinitialise la base de données en supprimant toutes les tables et en les recréant. Certaines données sont remises
@@ -276,5 +292,6 @@ public class database {
                     + e.getMessage() + Utils.ANSI_RESET);
         }
     }
+    
 
 }
